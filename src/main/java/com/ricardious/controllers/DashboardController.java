@@ -1,10 +1,11 @@
 package com.ricardious.controllers;
 
 import com.ricardious.components.ThemeModeToggle;
-import com.ricardious.database.DatabaseConnection;
+import com.ricardious.database.config.DatabaseConnection;
 import com.ricardious.models.ActivoFijo;
 import com.ricardious.models.EdificioFijo;
 import com.ricardious.models.EmpleadobienesFijo;
+import com.ricardious.utilities.TableViewUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -194,69 +195,7 @@ public class DashboardController implements Initializable {
     private TextField empleadoestadofield;
 
 
-
-
-
-    /**
-     * Sets up search functionality for a TableView by filtering data based on input in a TextField.
-     * This method listens to changes in the search field and filters items in the TableView according
-     * to specified properties in each item. It supports dynamic sorting and binding to the TableView's comparator.
-     *
-     * @param searchField the TextField where users input search text
-     * @param tableView the TableView to be filtered and sorted
-     * @param data the original data list to be displayed in the TableView
-     * @param searchProperties the properties within each item to be searched for matches with the input text
-     * @param <T> the type of items in the TableView
-     */
-    private <T> void setupTableSearch(TextField searchField, TableView<T> tableView, ObservableList<T> data,
-                                      String... searchProperties) {
-        // Initializes FilteredList with all data, initially showing all items
-        FilteredList<T> filteredData = new FilteredList<>(data, p -> true);
-
-        // Adds a listener to the search field to detect text input changes
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(item -> {
-                // If the search text is empty, all items are displayed
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-
-                String lowerCaseFilter = newValue.toLowerCase();
-
-                // Checks each specified property for a match with the search text
-                for (String property : searchProperties) {
-                    String value = "";
-                    if (item instanceof Map) {
-                        // If item is a Map, retrieve value using the property key
-                        value = String.valueOf(((Map) item).get(property));
-                    } else {
-                        try {
-                            // If item is not a Map, retrieve value through reflection
-                            value = String.valueOf(item.getClass().getField(property).get(item));
-                        } catch (Exception e) {
-                            continue; // Skips to the next property if error occurs
-                        }
-                    }
-
-                    // If the property's value contains the search text, the item is shown
-                    if (value.toLowerCase().contains(lowerCaseFilter)) {
-                        return true;
-                    }
-                }
-                // If no properties match, item is filtered out
-                return false;
-            });
-        });
-
-        // Creates a SortedList linked to the FilteredList for automatic sorting
-        SortedList<T> sortedData = new SortedList<>(filteredData);
-        sortedData.comparatorProperty().bind(tableView.comparatorProperty());
-
-        // Binds the sorted and filtered data to the table view
-        tableView.setItems(sortedData);
-    }
-
-
+    
     /**
      * Sets up the search functionality specifically for the "Bienes" table view.
      * It uses the `setupTableSearch` method to enable dynamic filtering of the table based on input in the
@@ -264,7 +203,7 @@ public class DashboardController implements Initializable {
      * the specified properties: `ColLiteral`, `ColDescripcion`, and `ColRenglonGasto`.
      */
     private void setupBienesSearch() {
-        setupTableSearch(Search_Bienes,
+        TableViewUtils.setupTableSearch(Search_Bienes,
                 addEmployee_tableView11,
                 getBienes(),
                 ColLiteral, ColDescripcion, ColRenglonGasto);
@@ -409,12 +348,13 @@ public class DashboardController implements Initializable {
         this.col_ubicacion_edificios.setCellValueFactory(new MapValueFactory(ColDescripcionn));
         this.col_descripcion_edificios.setCellValueFactory(new MapValueFactory(ColUbicacion));
         this.col_seccion_edificios.setCellValueFactory(new MapValueFactory(ColSeccion));
-        
+
 
         this.edificiotabla.setItems(listaa);
 
 
     }
+
 
 
     @FXML
@@ -543,107 +483,6 @@ public class DashboardController implements Initializable {
     }
 
 
-    /**
-     * Coordinates for tracking mouse position during window drag.
-     */
-    private double x = 0;
-    private double y = 0;
-
-    /**
-     * Handles the logout process by showing a confirmation dialog.
-     * If the user confirms, the current window is hidden and the login window is displayed.
-     * The login window can be dragged by clicking and dragging the mouse.
-     */
-    public void logout() {
-        // Create a confirmation alert
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Mensaje de Confirmacion");
-        alert.setHeaderText(null);
-        alert.setContentText("¿Estás seguro de que deseas salir?");
-        Optional<ButtonType> option = alert.showAndWait();
-
-        try {
-            // If the user confirms the logout
-            if (option.get().equals(ButtonType.OK)) {
-                // Hide the current window
-                logout.getScene().getWindow().hide();
-
-                // Load the login window
-                Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
-                Stage stage = new Stage();
-                Scene scene = new Scene(root);
-
-                // Set the scene and make the window transparent
-                stage.setScene(scene);
-                stage.initStyle(StageStyle.TRANSPARENT);
-
-                // Add mouse event handlers for dragging the window
-                root.setOnMousePressed(event -> {
-                    x = event.getSceneX();
-                    y = event.getSceneY();
-                });
-
-                root.setOnMouseDragged(event -> {
-                    stage.setX(event.getScreenX() - x);
-                    stage.setY(event.getScreenY() - y);
-                });
-
-                // Show the login window
-                stage.setScene(scene);
-                stage.show();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Maximizes or restores the main application window.
-     * This method toggles the maximized state of the window. If the window is not maximized,
-     * it adjusts the size to fill the primary screen's bounds, simulating a maximized state.
-     * If the window is already maximized, it restores it to a default size and centers it on the screen.
-     */
-    public void maximize() {
-        Stage stage = (Stage) main_form.getScene().getWindow(); // Retrieve the current application stage
-
-        if (!stage.isMaximized()) {
-            // Get the size of the primary screen
-            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-
-            // Adjust the stage to fit the screen bounds
-            stage.setX(screenBounds.getMinX());
-            stage.setY(screenBounds.getMinY());
-            stage.setWidth(screenBounds.getWidth());
-            stage.setHeight(screenBounds.getHeight());
-        } else {
-            // Restore to default size if already maximized
-            stage.setWidth(800);  // Default window width
-            stage.setHeight(600); // Default window height
-            stage.centerOnScreen(); // Optionally center the window
-        }
-
-        // Toggle the maximized state of the stage
-        stage.setMaximized(!stage.isMaximized());
-    }
-
-    /**
-     * Closes the application.
-     * This method terminates the program by calling System.exit(0),
-     * ensuring all resources are released and the application stops running.
-     */
-    public void close() {
-        System.exit(0);
-    }
-
-    /**
-     * Minimizes the main application window.
-     * This method retrieves the current stage from the main form's scene
-     * and sets its state to "iconified", effectively minimizing the window.
-     */
-    public void minimize() {
-        Stage stage = (Stage) main_form.getScene().getWindow(); // Get the current application stage
-        stage.setIconified(true); // Minimize the stage
-    }
 
 
     @FXML
@@ -865,9 +704,6 @@ public class DashboardController implements Initializable {
 
 
 
-
-
-
     @FXML
     void exportToExcel(MouseEvent event) {
         ObservableList<Map> dataList = getEmpleadobienes();
@@ -1062,5 +898,108 @@ public class DashboardController implements Initializable {
             tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         }
     }
+
+    /**
+     * Coordinates for tracking mouse position during window drag.
+     */
+    private double x = 0;
+    private double y = 0;
+
+    /**
+     * Handles the logout process by showing a confirmation dialog.
+     * If the user confirms, the current window is hidden and the login window is displayed.
+     * The login window can be dragged by clicking and dragging the mouse.
+     */
+    public void logout() {
+        // Create a confirmation alert
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Mensaje de Confirmacion");
+        alert.setHeaderText(null);
+        alert.setContentText("¿Estás seguro de que deseas salir?");
+        Optional<ButtonType> option = alert.showAndWait();
+
+        try {
+            // If the user confirms the logout
+            if (option.get().equals(ButtonType.OK)) {
+                // Hide the current window
+                logout.getScene().getWindow().hide();
+
+                // Load the login window
+                Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
+                Stage stage = new Stage();
+                Scene scene = new Scene(root);
+
+                // Set the scene and make the window transparent
+                stage.setScene(scene);
+                stage.initStyle(StageStyle.TRANSPARENT);
+
+                // Add mouse event handlers for dragging the window
+                root.setOnMousePressed(event -> {
+                    x = event.getSceneX();
+                    y = event.getSceneY();
+                });
+
+                root.setOnMouseDragged(event -> {
+                    stage.setX(event.getScreenX() - x);
+                    stage.setY(event.getScreenY() - y);
+                });
+
+                // Show the login window
+                stage.setScene(scene);
+                stage.show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Maximizes or restores the main application window.
+     * This method toggles the maximized state of the window. If the window is not maximized,
+     * it adjusts the size to fill the primary screen's bounds, simulating a maximized state.
+     * If the window is already maximized, it restores it to a default size and centers it on the screen.
+     */
+    public void maximize() {
+        Stage stage = (Stage) main_form.getScene().getWindow(); // Retrieve the current application stage
+
+        if (!stage.isMaximized()) {
+            // Get the size of the primary screen
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+
+            // Adjust the stage to fit the screen bounds
+            stage.setX(screenBounds.getMinX());
+            stage.setY(screenBounds.getMinY());
+            stage.setWidth(screenBounds.getWidth());
+            stage.setHeight(screenBounds.getHeight());
+        } else {
+            // Restore to default size if already maximized
+            stage.setWidth(800);  // Default window width
+            stage.setHeight(600); // Default window height
+            stage.centerOnScreen(); // Optionally center the window
+        }
+
+        // Toggle the maximized state of the stage
+        stage.setMaximized(!stage.isMaximized());
+    }
+
+    /**
+     * Closes the application.
+     * This method terminates the program by calling System.exit(0),
+     * ensuring all resources are released and the application stops running.
+     */
+    public void close() {
+        System.exit(0);
+    }
+
+    /**
+     * Minimizes the main application window.
+     * This method retrieves the current stage from the main form's scene
+     * and sets its state to "iconified", effectively minimizing the window.
+     */
+    public void minimize() {
+        Stage stage = (Stage) main_form.getScene().getWindow(); // Get the current application stage
+        stage.setIconified(true); // Minimize the stage
+    }
+
 
 }
