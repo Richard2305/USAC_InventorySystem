@@ -5,12 +5,12 @@ import com.ricardious.database.config.DatabaseConnection;
 import com.ricardious.models.ActivoFijo;
 import com.ricardious.models.EdificioFijo;
 import com.ricardious.models.EmpleadobienesFijo;
+import com.ricardious.models.Empleadoagregado;
+import com.ricardious.models.Empleados;
 import com.ricardious.utilities.TableViewUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.cell.MapValueFactory;
 import javafx.scene.input.MouseEvent;
@@ -58,8 +58,6 @@ public class DashboardController implements Initializable {
     @FXML
     private Button agregar_empleado;
     @FXML
-    private Button saldo_activos;
-    @FXML
     private Button logout;
     @FXML
     private Button inventario_empleado;
@@ -83,8 +81,6 @@ public class DashboardController implements Initializable {
     private AnchorPane inventarioglobal_form;
     @FXML
     private AnchorPane agregar_empleado_form;
-    @FXML
-    private AnchorPane saldo_activos_form;
     @FXML
     private AnchorPane empleado_form;
     @FXML
@@ -124,7 +120,7 @@ public class DashboardController implements Initializable {
 
     // TableView for asset balances (specific to saldo_activos_form)
     @FXML
-    private TableView<?> saldo_tableView;
+    private TableView<?> inventarioglobal_tableView;
 
     // TableView and columns for buildings inventory
     @FXML
@@ -195,7 +191,57 @@ public class DashboardController implements Initializable {
     private TextField empleadoestadofield;
 
 
-    
+    // TableView and columns for employee inventory (specific to agregarempleado_table)
+    @FXML
+    private TableView<Map> agregarempleado_table;
+    @FXML
+    private TableColumn<?, ?> codigoempleado;
+    @FXML
+    private TableColumn<?, ?> apellidoempleado;
+    @FXML
+    private TableColumn<?, ?> dpiempleado;
+    @FXML
+    private TableColumn<?, ?> nombreempleado;
+    @FXML
+    private TableColumn<?, ?> direccionempleado;
+    @FXML
+    private TableColumn<?, ?> telefonoempleado;
+    @FXML
+    private TableColumn<?, ?> puestoempleado;
+    @FXML
+    private TableColumn<?, ?> correoempleado;
+
+    // TextFields for employee inventory details
+    @FXML
+    private TextField agregarempl_codigo;
+    @FXML
+    private TextField agregarempl_nombre;
+    @FXML
+    private TextField agregarempl_apellido;
+    @FXML
+    private TextField agregarempl_direccion;
+    @FXML
+    private TextField agregarempl_telefono;
+    @FXML
+    private TextField agregarempl_puesto;
+    @FXML
+    private TextField agregarempl_correo;
+    @FXML
+    private TextField agregarempl_dpi;
+
+
+    @FXML
+    private TableView<Map> empleados_table;
+    @FXML
+    private TableColumn<?, ?> empleadoscodigo;
+    @FXML
+    private TableColumn<?, ?> empleadosnombre;
+    @FXML
+    private TableColumn<?, ?> empleadosapellido;
+    @FXML
+    private TableColumn<?, ?> empleadospuesto;
+
+
     /**
      * Sets up the search functionality specifically for the "Bienes" table view.
      * It uses the `setupTableSearch` method to enable dynamic filtering of the table based on input in the
@@ -208,7 +254,6 @@ public class DashboardController implements Initializable {
                 getBienes(),
                 ColLiteral, ColDescripcion, ColRenglonGasto);
     }
-
 
 
     @FXML
@@ -230,7 +275,7 @@ public class DashboardController implements Initializable {
      */
     public ObservableList<Map> getBienes() {
         // SQL query to fetch all rows from the "bienes" table
-        var sql = "SELECT * FROM sql5744925.bienes";
+        var sql = "SELECT * FROM usac_inventory.bienes";
         ObservableList<Map> bienesList = FXCollections.observableArrayList();  // List to store the assets
 
         Connection connection = null;  // Connection object to be used to close the connection properly
@@ -282,7 +327,7 @@ public class DashboardController implements Initializable {
     }
 
 
-    private void llenarTablaBienes(){
+    private void llenarTablaBienes() {
         ObservableList<Map> lista = getBienes();
         this.addEmployee_col_employeeID11.setCellValueFactory(new MapValueFactory(ColLiteral));
         this.addEmployee_col_firstName11.setCellValueFactory(new MapValueFactory(ColDescripcion));
@@ -293,9 +338,6 @@ public class DashboardController implements Initializable {
     }
 
 
-
-
-
     @FXML
     void importEXCELL(MouseEvent event) {
 
@@ -303,32 +345,31 @@ public class DashboardController implements Initializable {
 
     private String ColNumero = "Numero";
     private String ColNombreedificio = "Nombreedificio";
-    private String ColDescripcionn = "Descripcion";
     private String ColUbicacion = "Ubicacion";
+    private String ColDescripcionn = "Descripcion";
     private String ColSeccion = "Seccion";
 
 
-
-    public ObservableList<Map> getEdificios(){
-        var sql = "SELECT * FROM sql5744925.edificios";
+    public ObservableList<Map> getEdificios() {
+        var sql = "SELECT * FROM usac_inventory.edificios";
         ObservableList<Map> edificiosList = FXCollections.observableArrayList();
-        try{
+        try {
             DatabaseConnection connectNoww = new DatabaseConnection();
             PreparedStatement consultaa = connectNoww.getConnection().prepareStatement(sql);
             ResultSet resultSett = consultaa.executeQuery();
-            while (resultSett.next()){
+            while (resultSett.next()) {
                 EdificioFijo EdificioFijo = new EdificioFijo();
                 Map<String, Object> coleccionn = new HashMap<>();
                 EdificioFijo.setNumero(resultSett.getInt("Numero"));
                 EdificioFijo.setNombreedificio(resultSett.getString("Nombreedificio"));
-                EdificioFijo.setUbicacion(resultSett.getString("Descripcion"));
-                EdificioFijo.setDescripcion(resultSett.getString("Ubicacion"));
+                EdificioFijo.setUbicacion(resultSett.getString("Ubicacion"));
+                EdificioFijo.setDescripcion(resultSett.getString("Descripcion"));
                 EdificioFijo.setSeccion(resultSett.getString("Seccion"));
                 coleccionn.put(ColNumero, EdificioFijo.getNumero());
                 coleccionn.put(ColNombreedificio, EdificioFijo.getNombreedificio());
-                coleccionn.put(ColDescripcionn,  EdificioFijo.getUbicacion());
-                coleccionn.put(ColUbicacion, EdificioFijo.getDescripcion());
-                coleccionn.put(ColSeccion,  EdificioFijo.getSeccion());
+                coleccionn.put(ColUbicacion, EdificioFijo.getUbicacion());
+                coleccionn.put(ColDescripcionn, EdificioFijo.getDescripcion());
+                coleccionn.put(ColSeccion, EdificioFijo.getSeccion());
 
                 edificiosList.add(coleccionn);
             }
@@ -341,12 +382,12 @@ public class DashboardController implements Initializable {
         return edificiosList;
     }
 
-    private void llenarTablaEdificios(){
+    private void llenarTablaEdificios() {
         ObservableList<Map> listaa = getEdificios();
         this.col_id_edificios.setCellValueFactory(new MapValueFactory(ColNumero));
         this.col_nombre_edificios.setCellValueFactory(new MapValueFactory(ColNombreedificio));
-        this.col_ubicacion_edificios.setCellValueFactory(new MapValueFactory(ColDescripcionn));
-        this.col_descripcion_edificios.setCellValueFactory(new MapValueFactory(ColUbicacion));
+        this.col_ubicacion_edificios.setCellValueFactory(new MapValueFactory(ColUbicacion));
+        this.col_descripcion_edificios.setCellValueFactory(new MapValueFactory(ColDescripcionn));
         this.col_seccion_edificios.setCellValueFactory(new MapValueFactory(ColSeccion));
 
 
@@ -354,7 +395,6 @@ public class DashboardController implements Initializable {
 
 
     }
-
 
 
     @FXML
@@ -373,14 +413,14 @@ public class DashboardController implements Initializable {
     private String ColEstado = "Estado";
 
 
-    public ObservableList<Map> getEmpleadobienes(){
-        var sql = "SELECT * FROM sql5744925.empleadobienes";
+    public ObservableList<Map> getEmpleadobienes() {
+        var sql = "SELECT * FROM usac_inventory.empleadobienes";
         ObservableList<Map> empleadobienesList = FXCollections.observableArrayList();
-        try{
+        try {
             DatabaseConnection connecttNow = new DatabaseConnection();
             PreparedStatement consullta = connecttNow.getConnection().prepareStatement(sql);
             ResultSet resulttSet = consullta.executeQuery();
-            while (resulttSet.next()){
+            while (resulttSet.next()) {
                 EmpleadobienesFijo EmpleadobienesFijo = new EmpleadobienesFijo();
                 Map<String, Object> colecccion = new HashMap<>();
                 EmpleadobienesFijo.setTarjeta(resulttSet.getInt("Tarjeta"));
@@ -394,9 +434,9 @@ public class DashboardController implements Initializable {
                 EmpleadobienesFijo.setEstado(resulttSet.getString("Estado"));
                 colecccion.put(ColTarjeta, EmpleadobienesFijo.getTarjeta());
                 colecccion.put(ColCodigoActivo, EmpleadobienesFijo.getCodigoActivo());
-                colecccion.put(ColDescripcionnn,  EmpleadobienesFijo.getDescripcion());
+                colecccion.put(ColDescripcionnn, EmpleadobienesFijo.getDescripcion());
                 colecccion.put(ColValor, EmpleadobienesFijo.getValor());
-                colecccion.put(ColRegistropersonal,  EmpleadobienesFijo.getRegistropersonal());
+                colecccion.put(ColRegistropersonal, EmpleadobienesFijo.getRegistropersonal());
                 colecccion.put(ColNombreempleado, EmpleadobienesFijo.getNombreempleado());
                 colecccion.put(ColActivo, EmpleadobienesFijo.getActivo());
                 colecccion.put(ColSeccionn, EmpleadobienesFijo.getSeccionn());
@@ -413,7 +453,7 @@ public class DashboardController implements Initializable {
         return empleadobienesList;
     }
 
-    private void llenarTablaEmpleadobienes(){
+    private void llenarTablaEmpleadobienes() {
         ObservableList<Map> listta = getEmpleadobienes();
         this.inventarioempleado_tarjeta.setCellValueFactory(new MapValueFactory(ColTarjeta));
         this.inventarioempleado_codigoactivo.setCellValueFactory(new MapValueFactory(ColCodigoActivo));
@@ -430,11 +470,151 @@ public class DashboardController implements Initializable {
     }
 
 
+    @FXML
+    void Importempleado(MouseEvent event) {
+
+    }
+
+    private String ColCodigo = "Codigo";
+    private String ColDPI = "DPI";
+    private String ColNombre = "Nombre";
+    private String ColApellido = "Apellido";
+    private String ColDireccion = "Direccion";
+    private String ColTelefono = "Telefono";
+    private String ColPuesto = "Puesto";
+    private String ColCorreo = "Correo";
+
+
+    public ObservableList<Map> getempleado() {
+        var sql = "SELECT * FROM usac_inventory.empleadoagregado";
+        ObservableList<Map> empleadoList = FXCollections.observableArrayList();
+        try {
+            DatabaseConnection connectNow = new DatabaseConnection();
+            PreparedStatement consulta = connectNow.getConnection().prepareStatement(sql);
+            ResultSet resultSett = consulta.executeQuery();
+            while (resultSett.next()) {
+                Empleadoagregado Empleadoagregado = new Empleadoagregado();
+                Map<String, Object> coleccionn = new HashMap<>();
+                Empleadoagregado.setCodigo(resultSett.getInt("Codigo"));
+                Empleadoagregado.setDPI(resultSett.getString("DPI"));
+                Empleadoagregado.setNombre(resultSett.getString("Nombre"));
+                Empleadoagregado.setApellido(resultSett.getString("Apellido"));
+                Empleadoagregado.setDireccion(resultSett.getString("Direccion"));
+                Empleadoagregado.setTelefono(resultSett.getString("Telefono"));
+                Empleadoagregado.setPuesto(resultSett.getString("Puesto"));
+                Empleadoagregado.setCorreo(resultSett.getString("Correo"));
+                coleccionn.put(ColCodigo, Empleadoagregado.getCodigo());
+                coleccionn.put(ColDPI, Empleadoagregado.getDPI());
+                coleccionn.put(ColNombre, Empleadoagregado.getNombre());
+                coleccionn.put(ColApellido, Empleadoagregado.getApellido());
+                coleccionn.put(ColDireccion, Empleadoagregado.getDireccion());
+                coleccionn.put(ColTelefono, Empleadoagregado.getTelefono());
+                coleccionn.put(ColPuesto, Empleadoagregado.getPuesto());
+                coleccionn.put(ColCorreo, Empleadoagregado.getCorreo());
+
+
+                empleadoList.add(coleccionn);
+            }
+            resultSett.close();
+            consulta.close();
+
+        } catch (Exception u) {
+            throw new RuntimeException(u);
+        }
+        return empleadoList;
+    }
+
+    private void llenarTablaEmpleado() {
+        ObservableList<Map> lista = getempleado();
+        this.codigoempleado.setCellValueFactory(new MapValueFactory(ColCodigo));
+        this.dpiempleado.setCellValueFactory(new MapValueFactory(ColDPI));
+        this.nombreempleado.setCellValueFactory(new MapValueFactory(ColNombre));
+        this.apellidoempleado.setCellValueFactory(new MapValueFactory(ColApellido));
+        this.direccionempleado.setCellValueFactory(new MapValueFactory(ColDireccion));
+        this.telefonoempleado.setCellValueFactory(new MapValueFactory(ColTelefono));
+        this.puestoempleado.setCellValueFactory(new MapValueFactory(ColPuesto));
+        this.correoempleado.setCellValueFactory(new MapValueFactory(ColCorreo));
+
+
+        this.agregarempleado_table.setItems(lista);
+
+
+    }
+
+
+
+
+
+
+
+
+    @FXML
+    void actualizartablaempl(MouseEvent event) {
+
+    }
+
+    private String ColCodigos = "Codigo";
+    private String ColNombres = "Nombre";
+    private String ColApellidos = "Apellido";
+    private String ColPuestos = "Puesto";
+
+
+    public ObservableList<Map> getempleados() {
+        var sql = "SELECT * FROM usac_inventory.empleados";
+        ObservableList<Map> empleadosList = FXCollections.observableArrayList();
+        try {
+            DatabaseConnection connectNow = new DatabaseConnection();
+            PreparedStatement consulta = connectNow.getConnection().prepareStatement(sql);
+            ResultSet resultSett = consulta.executeQuery();
+            while (resultSett.next()) {
+                Empleados Empleados = new Empleados();
+                Map<String, Object> coleccionn = new HashMap<>();
+                Empleados.setCodigo(resultSett.getInt("Codigo"));
+                Empleados.setNombre(resultSett.getString("Nombre"));
+                Empleados.setApellido(resultSett.getString("Apellido"));
+                Empleados.setPuesto(resultSett.getString("Puesto"));
+                coleccionn.put(ColCodigos, Empleados.getCodigo());
+                coleccionn.put(ColNombres, Empleados.getNombre());
+                coleccionn.put(ColApellidos, Empleados.getApellido());
+                coleccionn.put(ColPuestos, Empleados.getPuesto());
+
+
+                empleadosList.add(coleccionn);
+            }
+            resultSett.close();
+            consulta.close();
+
+        } catch (Exception u) {
+            throw new RuntimeException(u);
+        }
+        return empleadosList;
+    }
+
+    private void llenarTablaEmpleados() {
+        ObservableList<Map> lista = getempleados();
+        this.empleadoscodigo.setCellValueFactory(new MapValueFactory(ColCodigos));
+        this.empleadosnombre.setCellValueFactory(new MapValueFactory(ColNombres));
+        this.empleadosapellido.setCellValueFactory(new MapValueFactory(ColApellidos));
+        this.empleadospuesto.setCellValueFactory(new MapValueFactory(ColPuestos));
+
+        this.empleados_table.setItems(lista);
+
+
+    }
+
+
+
+
+
+
+
+
+
+
     public void switchForm(ActionEvent event) {
         // Reset all form visibility to false
         home_form.setVisible(false);
         bienes.setVisible(false);
-        saldo_activos_form.setVisible(false);
         agregar_empleado_form.setVisible(false);
         inventarioglobal_form.setVisible(false);
         inventarioempleado_form.setVisible(false);
@@ -444,7 +624,6 @@ public class DashboardController implements Initializable {
         // Reset all button styles to transparent
         home_btn.setStyle("-fx-background-color: transparent");
         inventario_activos.setStyle("-fx-background-color: transparent");
-        saldo_activos.setStyle("-fx-background-color: transparent");
         agregar_empleado.setStyle("-fx-background-color: transparent");
         inventario_Global.setStyle("-fx-background-color: transparent");
         inventario_empleado.setStyle("-fx-background-color: transparent");
@@ -459,11 +638,9 @@ public class DashboardController implements Initializable {
             bienes.setVisible(true);
             inventario_activos.setStyle("-fx-background-color: linear-gradient(to bottom right, #7f00ff, #e100ff)");
             llenarTablaBienes();
-        } else if (event.getSource() == saldo_activos) {
-            saldo_activos_form.setVisible(true);
-            saldo_activos.setStyle("-fx-background-color: linear-gradient(to bottom right, #7f00ff, #e100ff)");
         } else if (event.getSource() == agregar_empleado) {
             agregar_empleado_form.setVisible(true);
+            llenarTablaEmpleado();
             agregar_empleado.setStyle("-fx-background-color: linear-gradient(to bottom right, #7f00ff, #e100ff)");
         } else if (event.getSource() == inventario_Global) {
             inventarioglobal_form.setVisible(true);
@@ -475,14 +652,13 @@ public class DashboardController implements Initializable {
         } else if (event.getSource() == empleado) {
             empleado_form.setVisible(true);
             empleado.setStyle("-fx-background-color: linear-gradient(to bottom right, #7f00ff, #e100ff)");
+            llenarTablaEmpleados();
         } else if (event.getSource() == edificio) {
             edificios_form.setVisible(true);
             edificio.setStyle("-fx-background-color: linear-gradient(to bottom right, #7f00ff, #e100ff)");
             llenarTablaEdificios();
         }
     }
-
-
 
 
     @FXML
@@ -493,18 +669,17 @@ public class DashboardController implements Initializable {
         Integer Renglon_gasto = Integer.parseInt(Renglon_Gasto);
 
         DatabaseConnection connectNow = new DatabaseConnection();
-        String addActivo = "INSERT INTO sql5744925.bienes(Literal, Descripcion, RenglonGasto) VALUES (?, ? , ?)";
+        String addActivo = "INSERT INTO usac_inventory.bienes(Literal, Descripcion, RenglonGasto) VALUES (?, ? , ?)";
         try (Connection connectDB = connectNow.getConnection();
-             PreparedStatement preparedStatement = connectDB.prepareStatement(addActivo)){
+             PreparedStatement preparedStatement = connectDB.prepareStatement(addActivo)) {
             preparedStatement.setString(1, Literal);
             preparedStatement.setString(2, Descripcion);
             preparedStatement.setInt(3, Renglon_gasto);
             preparedStatement.executeUpdate();
             JOptionPane.showMessageDialog(null, "Se han insertado los datos");
-    }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Datos ingresados no validos");
-        e.printStackTrace();
+            e.printStackTrace();
         }
         llenarTablaBienes();
     }
@@ -523,25 +698,21 @@ public class DashboardController implements Initializable {
         if (Literal == null || Literal.trim().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Operación cancelada");
             return; // Sale del método sin hacer nada
+        } else {
+            DatabaseConnection connectNow = new DatabaseConnection();
+            String addActivo = "DELETE FROM usac_inventory.bienes WHERE (Literal = ?)";
+            try (Connection connectDB = connectNow.getConnection();
+                 PreparedStatement preparedStatement = connectDB.prepareStatement(addActivo)) {
+                preparedStatement.setString(1, Literal);
+                preparedStatement.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Se han Eliminado los datos");
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Datos ingresados no validos");
+                e.printStackTrace();
+            }
         }
-        else {
-        DatabaseConnection connectNow = new DatabaseConnection();
-        String addActivo = "DELETE FROM sql5744925.bienes WHERE (Literal = ?)";
-        try (Connection connectDB = connectNow.getConnection();
-             PreparedStatement preparedStatement = connectDB.prepareStatement(addActivo)){
-            preparedStatement.setString(1, Literal);
-            preparedStatement.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Se han Eliminado los datos");
-        }
-        catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Datos ingresados no validos");
-            e.printStackTrace();
-        }
-    }
         llenarTablaBienes();
     }
-
-
 
 
     @FXML
@@ -555,9 +726,9 @@ public class DashboardController implements Initializable {
 
 
         DatabaseConnection connectNoww = new DatabaseConnection();
-        String addEdificio = "INSERT INTO sql5744925.edificios(Numero, Nombreedificio, Ubicacion, Descripcion, Seccion) VALUES (?, ? , ?, ?, ? )";
+        String addEdificio = "INSERT INTO usac_inventory.edificios(Numero, Nombreedificio, Ubicacion, Descripcion, Seccion) VALUES (?, ? , ?, ?, ? )";
         try (Connection connectDBs = connectNoww.getConnection();
-             PreparedStatement preparedStatementt = connectDBs.prepareStatement(addEdificio)){
+             PreparedStatement preparedStatementt = connectDBs.prepareStatement(addEdificio)) {
             preparedStatementt.setInt(1, numero);
             preparedStatementt.setString(2, Nombreedificio);
             preparedStatementt.setString(3, Ubicacion);
@@ -566,8 +737,7 @@ public class DashboardController implements Initializable {
             preparedStatementt.executeUpdate();
 
             JOptionPane.showMessageDialog(null, "Se han insertado los datos");
-        }
-        catch (SQLException u) {
+        } catch (SQLException u) {
             JOptionPane.showMessageDialog(null, "Datos ingresados no validos");
             u.printStackTrace();
         }
@@ -590,30 +760,21 @@ public class DashboardController implements Initializable {
         if (Numero == null || Numero.trim().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Operación cancelada");
             return; // Sale del método sin hacer nada
-        }
-        else {
+        } else {
             DatabaseConnection connectNoww = new DatabaseConnection();
-            String addEdificio = "DELETE FROM sql5744925.edificios WHERE (Numero = ?)";
+            String addEdificio = "DELETE FROM usac_inventory.edificios WHERE (Numero = ?)";
             try (Connection connectDBs = connectNoww.getConnection();
-                 PreparedStatement preparedStatementt = connectDBs.prepareStatement(addEdificio)){
+                 PreparedStatement preparedStatementt = connectDBs.prepareStatement(addEdificio)) {
                 preparedStatementt.setString(1, Numero);
                 preparedStatementt.executeUpdate();
                 JOptionPane.showMessageDialog(null, "Se han Eliminado los datos");
-            }
-            catch (SQLException u) {
+            } catch (SQLException u) {
                 JOptionPane.showMessageDialog(null, "Datos ingresados no validos");
                 u.printStackTrace();
             }
         }
         llenarTablaEdificios();
     }
-
-
-
-
-
-
-
 
 
     @FXML
@@ -630,13 +791,10 @@ public class DashboardController implements Initializable {
         String Estado = empleadoestadofield.getText();
 
 
-
-
-
         DatabaseConnection connecttNow = new DatabaseConnection();
-        String addEmpleadobienes = "INSERT INTO sql5744925.empleadobienes(Tarjeta, CodigoActivo, Descripcion, Valor, Registropersonal, Nombreempleado, Activo, Seccionn, Estado) VALUES (?, ? , ?, ?, ?, ?, ?, ?, ? )";
+        String addEmpleadobienes = "INSERT INTO usac_inventory.empleadobienes(Tarjeta, CodigoActivo, Descripcion, Valor, Registropersonal, Nombreempleado, Activo, Seccionn, Estado) VALUES (?, ? , ?, ?, ?, ?, ?, ?, ? )";
         try (Connection connectDBs = connecttNow.getConnection();
-             PreparedStatement preparedStatement = connectDBs.prepareStatement(addEmpleadobienes)){
+             PreparedStatement preparedStatement = connectDBs.prepareStatement(addEmpleadobienes)) {
             preparedStatement.setInt(1, tarejta);
             preparedStatement.setString(2, CodigoActivo);
             preparedStatement.setString(3, Descripcion);
@@ -648,12 +806,10 @@ public class DashboardController implements Initializable {
             preparedStatement.setString(9, Estado);
 
 
-
             preparedStatement.executeUpdate();
 
             JOptionPane.showMessageDialog(null, "Se han insertado los datos");
-        }
-        catch (SQLException u) {
+        } catch (SQLException u) {
             JOptionPane.showMessageDialog(null, "Datos ingresados no validos");
             u.printStackTrace();
         }
@@ -681,17 +837,15 @@ public class DashboardController implements Initializable {
         if (Tarjeta == null || Tarjeta.trim().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Operación cancelada");
             return; // Sale del método sin hacer nada
-        }
-        else {
+        } else {
             DatabaseConnection connecttNow = new DatabaseConnection();
-            String addEmpleadobienes = "DELETE FROM sql5744925.empleadobienes WHERE (Tarjeta = ?)";
+            String addEmpleadobienes = "DELETE FROM usac_inventory.empleadobienes WHERE (Tarjeta = ?)";
             try (Connection connectDBs = connecttNow.getConnection();
-                 PreparedStatement preparedStatement = connectDBs.prepareStatement(addEmpleadobienes)){
+                 PreparedStatement preparedStatement = connectDBs.prepareStatement(addEmpleadobienes)) {
                 preparedStatement.setString(1, Tarjeta);
                 preparedStatement.executeUpdate();
                 JOptionPane.showMessageDialog(null, "Se han Eliminado los datos");
-            }
-            catch (SQLException u) {
+            } catch (SQLException u) {
                 JOptionPane.showMessageDialog(null, "Datos ingresados no validos");
                 u.printStackTrace();
             }
@@ -700,6 +854,67 @@ public class DashboardController implements Initializable {
     }
 
 
+    @FXML
+    void Update(MouseEvent event) {
+
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Actualizar Datos");
+        dialog.setHeaderText("Ingrese el número de tarjeta para actualizar los datos:");
+        dialog.setContentText("Tarjeta:");
+
+        Optional<String> result = dialog.showAndWait();
+
+        if (result.isPresent()) {
+            String Tarjeta = result.get().trim();
+
+            if (Tarjeta.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Por favor, ingrese un número de tarjeta válido.");
+                return;
+            }
+
+            Integer tarejta = Integer.parseInt(Tarjeta);
+            String CodigoActivo = empleadocodigofield.getText();
+            String Descripcion = empleadodescripfield.getText();
+            String Valor = empleadovalorfield.getText();
+            String Registropersonal = empleadoregistrofield.getText();
+            String Nombreempleado = empleadonombrefield.getText();
+            String Activo = empleadoactivofield.getText();
+            String Seccionn = empleadoseccionfield.getText();
+            String Estado = empleadoestadofield.getText();
+
+            DatabaseConnection connecttNow = new DatabaseConnection();
+            String updateEmpleadobienes = "UPDATE usac_inventory.empleadobienes SET CodigoActivo = ?, Descripcion = ?, Valor = ?, Registropersonal = ?, Nombreempleado = ?, Activo = ?, Seccionn = ?, Estado = ? WHERE Tarjeta = ?";
+
+            try (Connection connectDBs = connecttNow.getConnection();
+                 PreparedStatement preparedStatement = connectDBs.prepareStatement(updateEmpleadobienes)) {
+
+                preparedStatement.setString(1, CodigoActivo);
+                preparedStatement.setString(2, Descripcion);
+                preparedStatement.setString(3, Valor);
+                preparedStatement.setString(4, Registropersonal);
+                preparedStatement.setString(5, Nombreempleado);
+                preparedStatement.setString(6, Activo);
+                preparedStatement.setString(7, Seccionn);
+                preparedStatement.setString(8, Estado);
+                preparedStatement.setInt(9, tarejta);
+
+                int rowsAffected = preparedStatement.executeUpdate();
+
+                if (rowsAffected > 0) {
+                    JOptionPane.showMessageDialog(null, "Datos actualizados correctamente");
+                } else {
+                    JOptionPane.showMessageDialog(null, "No se encontró la tarjeta especificada para actualizar");
+                }
+            } catch (SQLException u) {
+                JOptionPane.showMessageDialog(null, "Error al actualizar los datos");
+                u.printStackTrace();
+            }
+
+            llenarTablaEdificios();
+        } else {
+            JOptionPane.showMessageDialog(null, "Operación cancelada");
+        }
+    }
 
 
 
@@ -757,7 +972,7 @@ public class DashboardController implements Initializable {
 
             Sheet sheet = workbook.getSheetAt(0);
             Connection connection = new DatabaseConnection().getConnection();
-            String sql = "INSERT INTO sql5744925.empleadobienes (Tarjeta, CodigoActivo, Descripcion, Valor, Registropersonal, Nombreempleado, Activo, Seccionn, Estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO usac_inventory.empleadobienes (Tarjeta, CodigoActivo, Descripcion, Valor, Registropersonal, Nombreempleado, Activo, Seccionn, Estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             connection.setAutoCommit(false); // Iniciamos una transacción
 
@@ -809,6 +1024,145 @@ public class DashboardController implements Initializable {
         }
     }
 
+
+    @FXML
+    void agregarempleado(MouseEvent event) {
+        String Codigo = agregarempl_codigo.getText();
+        Integer codigo = Integer.parseInt(Codigo);
+        String DPI = agregarempl_dpi.getText();
+        String Nombre = agregarempl_nombre.getText();
+        String Apellido = agregarempl_apellido.getText();
+        String Direccion = agregarempl_direccion.getText();
+        String Telefono = agregarempl_telefono.getText();
+        String Puesto = agregarempl_puesto.getText();
+        String Correo = agregarempl_correo.getText();
+
+
+        DatabaseConnection connectNoww = new DatabaseConnection();
+        String addEmppleado = "INSERT INTO usac_inventory.empleadoagregado(Codigo, DPI, Nombre, Apellido, Direccion, Telefono, Puesto, Correo) VALUES (?, ? , ?, ?, ?, ?, ?, ? )";
+        try (Connection connectDBs = connectNoww.getConnection();
+             PreparedStatement preparedStatementt = connectDBs.prepareStatement(addEmppleado)) {
+            preparedStatementt.setInt(1, codigo);
+            preparedStatementt.setString(2, DPI);
+            preparedStatementt.setString(3, Nombre);
+            preparedStatementt.setString(4, Apellido);
+            preparedStatementt.setString(5, Direccion);
+            preparedStatementt.setString(6, Telefono);
+            preparedStatementt.setString(7, Puesto);
+            preparedStatementt.setString(8, Correo);
+
+            preparedStatementt.executeUpdate();
+
+            JOptionPane.showMessageDialog(null, "Se han insertado los datos");
+        } catch (SQLException u) {
+            JOptionPane.showMessageDialog(null, "Datos ingresados no validos");
+            u.printStackTrace();
+        }
+        llenarTablaEmpleado();
+    }
+
+    @FXML
+    void limpiar(MouseEvent event) {
+        agregarempl_codigo.setText("");
+        agregarempl_dpi.setText("");
+        agregarempl_nombre.setText("");
+        agregarempl_apellido.setText("");
+        agregarempl_direccion.setText("");
+        agregarempl_telefono.setText("");
+        agregarempl_puesto.setText("");
+        agregarempl_correo.setText("");
+
+
+    }
+
+
+    @FXML
+    void actualizarempleado(MouseEvent event) {
+        DatabaseConnection connectNoww = new DatabaseConnection();
+        String copiarEmpleados = "INSERT INTO usac_inventory.empleados (Codigo, Nombre, Apellido, Puesto) " +
+                "SELECT Codigo, Nombre, Apellido, Puesto FROM usac_inventory.empleadoagregado " +
+                "ON DUPLICATE KEY UPDATE Nombre = VALUES(Nombre), Apellido = VALUES(Apellido), Puesto = VALUES(Puesto)";
+
+
+        try (Connection connectDBs = connectNoww.getConnection();
+             PreparedStatement preparedStatementt = connectDBs.prepareStatement(copiarEmpleados)) {
+
+            int filasAfectadas = preparedStatementt.executeUpdate();
+            JOptionPane.showMessageDialog(null, "Se han copiado " + filasAfectadas + " registros a la tabla archivada.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al copiar los datos");
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
+    @FXML
+    void eliminarempleados(MouseEvent event) {
+        String Codigo = JOptionPane.showInputDialog(null, "Ingrese el Codigo a Eliminar: ", "Ingrese aquí el texto", JOptionPane.OK_CANCEL_OPTION);
+
+        if (Codigo == null || Codigo.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Operación cancelada");
+            return; // Sale del método sin hacer nada
+        } else {
+            DatabaseConnection connecttNow = new DatabaseConnection();
+            String addEmpleados = "DELETE FROM usac_inventory.empleados WHERE (Codigo = ?)";
+            try (Connection connectDBs = connecttNow.getConnection();
+                 PreparedStatement preparedStatement = connectDBs.prepareStatement(addEmpleados)) {
+                preparedStatement.setString(1, Codigo);
+                preparedStatement.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Se han Eliminado los datos");
+            } catch (SQLException u) {
+                JOptionPane.showMessageDialog(null, "Datos ingresados no validos");
+                u.printStackTrace();
+            }
+        }
+        llenarTablaEmpleados();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Método auxiliar para convertir el valor de una celda a String
     private String getCellValueAsString(org.apache.poi.ss.usermodel.Cell cell) {
         if (cell == null) {
@@ -833,6 +1187,7 @@ public class DashboardController implements Initializable {
     }
 
 
+
     private static final String DARK_MODE_KEY = "darkModeEnabled";
     private static final String DARK_MODE_STYLESHEET = "/css/dashboardDesignDark.css";
 
@@ -840,19 +1195,40 @@ public class DashboardController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        initializeTableViews();
+       // initializeTableViews();
         initializeHomeButton();
         initializeDarkMode();
     }
 
-    private void initializeTableViews() {
-        setColumnResizePolicy(
-                saldo_tableView,
-                addEmployee_tableView1,
-                addEmployee_tableView11,
-                edificiotabla
-        );
-    }
+
+
+
+
+
+
+
+
+  //  private void initializeTableViews() {
+      //  setColumnResizePolicy(
+
+       //         addEmployee_tableView1,
+      //          addEmployee_tableView11,
+      //          edificiotabla,
+      //          agregarempleado_table,
+        //        inventarioempl_table,
+        //        inventarioglobal_tableView
+
+      //  );
+ //   }
+
+
+
+
+
+
+
+
+
 
     private void initializeHomeButton() {
         home_btn.setStyle(
@@ -893,11 +1269,23 @@ public class DashboardController implements Initializable {
         }
     }
 
-    private void setColumnResizePolicy(TableView<?>... tableViews) {
-        for (TableView<?> tableView : tableViews) {
-            tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        }
-    }
+
+
+
+
+
+
+   // private void setColumnResizePolicy(TableView<?>... tableViews) {
+     //   for (TableView<?> tableView : tableViews) {
+       //     tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+       // }
+ //   }
+
+
+
+
+
+
 
     /**
      * Coordinates for tracking mouse position during window drag.
